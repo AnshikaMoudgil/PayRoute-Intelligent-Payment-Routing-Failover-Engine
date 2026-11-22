@@ -1,0 +1,163 @@
+type Query {
+    merchants: [MerchantResponse!]!
+    merchantById(id: ID!): MerchantResponse
+    
+    providers: [ProviderDto!]!
+    providerById(id: ID!): ProviderDto
+    
+    routingRules: [RoutingRuleDto!]!
+    
+    payments(page: Int = 0, size: Int = 20): [PaymentResponse!]!
+    paymentById(id: ID!): PaymentResponse
+    paymentAttempts(transactionId: ID!): [PaymentAttemptDto!]!
+    
+    refunds(page: Int = 0, size: Int = 20): [RefundResponse!]!
+    refundById(id: ID!): RefundResponse
+    
+    analyticsOverview: AnalyticsOverviewDto!
+    providerAnalytics: [ProviderAnalyticsDto!]!
+}
+
+type Mutation {
+    initiatePayment(input: PaymentInput!): PaymentResponse!
+    initiateRefund(input: RefundInput!): RefundResponse!
+    updateProviderHealth(input: ProviderHealthInput!): ProviderDto!
+}
+
+type MerchantResponse {
+    id: ID!
+    merchantCode: String!
+    name: String!
+    email: String!
+    rawApiKeyPrefix: String
+    status: String!
+    defaultRoutingStrategy: String!
+    createdAt: String
+    updatedAt: String
+}
+
+type ProviderDto {
+    id: ID!
+    code: String!
+    name: String!
+    status: String!
+    baseFeePercentage: Float!
+    baseFeeFlat: Float!
+    avgLatencyMs: Int!
+    simulatedSuccessRate: Float!
+    failureProbability: Float!
+    priority: Int!
+    circuitBreakerState: String!
+    consecutiveFailures: Int!
+}
+
+type RoutingRuleDto {
+    id: ID!
+    merchantId: ID
+    merchantCode: String
+    merchantName: String
+    strategy: String!
+    minAmount: Float!
+    maxAmount: Float!
+    isActive: Boolean!
+}
+
+type PaymentAttemptDto {
+    id: ID!
+    providerId: ID!
+    providerCode: String!
+    providerName: String!
+    attemptNumber: Int!
+    status: String!
+    latencyMs: Int!
+    errorCode: String
+    errorMessage: String
+    isFailover: Boolean!
+    createdAt: String
+}
+
+type PaymentResponse {
+    id: ID!
+    merchantId: ID!
+    merchantCode: String!
+    merchantName: String!
+    idempotencyKey: String!
+    amount: Float!
+    currency: String!
+    status: String!
+    selectedProviderId: ID
+    selectedProviderCode: String
+    selectedProviderName: String
+    routingStrategyUsed: String
+    totalAttempts: Int!
+    feeCharged: Float
+    customerId: String
+    customerEmail: String
+    failureReason: String
+    attempts: [PaymentAttemptDto!]
+    createdAt: String
+    updatedAt: String
+}
+
+type RefundResponse {
+    id: ID!
+    transactionId: ID!
+    merchantId: ID!
+    merchantCode: String!
+    amount: Float!
+    reason: String
+    status: String!
+    providerRefundId: String
+    createdAt: String
+}
+
+type ProviderAnalyticsDto {
+    providerId: ID!
+    providerCode: String!
+    providerName: String!
+    status: String!
+    circuitBreakerState: String!
+    totalTransactions: Int!
+    successCount: Int!
+    failureCount: Int!
+    successRate: Float!
+    avgLatencyMs: Int!
+    totalFeesCollected: Float!
+    priority: Int!
+}
+
+type AnalyticsOverviewDto {
+    totalTransactions: Int!
+    successfulTransactions: Int!
+    failedTransactions: Int!
+    pendingTransactions: Int!
+    overallSuccessRate: Float!
+    totalVolume: Float!
+    totalProcessingFees: Float!
+    totalRetries: Int!
+    totalProviderSwitches: Int!
+    providerPerformance: [ProviderAnalyticsDto!]!
+}
+
+input PaymentInput {
+    idempotencyKey: String!
+    merchantCode: String
+    amount: Float!
+    currency: String = "INR"
+    customerId: String
+    customerEmail: String
+    routingStrategyOverride: String
+}
+
+input RefundInput {
+    transactionId: ID!
+    amount: Float!
+    reason: String
+}
+
+input ProviderHealthInput {
+    providerId: ID!
+    status: String
+    circuitBreakerState: String
+    resetCircuitBreaker: Boolean
+}

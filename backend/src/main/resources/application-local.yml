@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:payroutedb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    clean-disabled: true
+
+  # Local Redis config (with graceful fallback if offline)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 1000ms
+
+  # Local Kafka config
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+    producer:
+      retries: 0
+      acks: 1
+      properties:
+        max.block.ms: 1000
+    consumer:
+      group-id: payroute-local-group
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "com.payroute.dto.event,com.payroute.dto"
+
+payroute:
+  kafka:
+    enabled: ${KAFKA_ENABLED:false}
+
+logging:
+  level:
+    root: INFO
+    com.payroute: DEBUG
+    org.springframework.security: INFO
+    org.flywaydb: INFO

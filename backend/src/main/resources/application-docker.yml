@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:payroutedb}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:payroute}
+    password: ${DB_PASSWORD:payroute_secret}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    clean-disabled: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      retries: 3
+      acks: all
+      properties:
+        max.block.ms: 5000
+    consumer:
+      group-id: payroute-docker-group
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "com.payroute.dto.event,com.payroute.dto"
+
+payroute:
+  kafka:
+    topic-creation:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.payroute: INFO
+    org.flywaydb: INFO
